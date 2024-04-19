@@ -1,9 +1,9 @@
 import Player from '@vimeo/player';
 import throttle from 'lodash.throttle';
-//video element
+
 const iframe = document.querySelector('#vimeo-player');
 const player = new Player(iframe);
-//identify date-seconds from scrolling and logging in localStorage +throttle
+
 const onPlay = throttle(function (data) {
   console.log(data);
   const currentTimeVideo = data.seconds;
@@ -12,7 +12,22 @@ const onPlay = throttle(function (data) {
 }, 1000);
 
 player.on('timeupdate', onPlay);
-//retrieving seconds value from localStorage
+
 const newStartTime = localStorage.getItem('videoplayer-current-time');
 console.log(newStartTime);
-////resuming video playback from the remaining seconds
+
+player
+  .setCurrentTime(newStartTime)
+  .then(function (seconds) {
+    // seconds = the actual time that the player seeked to
+  })
+  .catch(function (error) {
+    switch (error.name) {
+      case 'RangeError':
+        // the time was less than 0 or greater than the videos duration
+        break;
+      default:
+        // some other error occurred
+        break;
+    }
+  });

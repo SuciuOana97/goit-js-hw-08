@@ -18,6 +18,7 @@
     "url": "https://github.com/SuciuOana97/goit-js-hw-08/issues"
   },
   "dependencies": {
+    "@vimeo/player": "^2.22.0",
     "modern-normalize": "^1.1.0"
   },
   "devDependencies": {

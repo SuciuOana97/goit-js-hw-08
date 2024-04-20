@@ -1,72 +1,42 @@
 import throttle from 'lodash.throttle';
-const LOCALE_STORAGE_KEY = 'contact-form-key';
-const formRef = document.querySelector('.feedback-form');
 
-formRef.addEventListener('input', throttle(storeInput, 500));
-formRef.addEventListener('submit', onSubmit);
+//Identificare elemente ce contin date
+const inputData = document.querySelector('input');
+const messageData = document.querySelector('textarea');
+const form = document.querySelector('.feedback-form');
+const localStorageKey = 'feedback-form-state';
 
-pageLoad();
+//extragere valori
+let inputValues = { email: '', message: '' };
 
-function storeInput(event) {
-  const { name, value } = event.target;
-
-  let saveData = load(LOCALE_STORAGE_KEY);
-  saveData = saveData ? saveData : {};
-  saveData[name] = value;
-
-  save(LOCALE_STORAGE_KEY, saveData);
-}
-
-function pageLoad() {
-  const savedData = load(LOCALE_STORAGE_KEY);
-
-  if (!savedData) {
-    return;
-  }
-  Object.entries(savedData).forEach(([name, value]) => {
-    formRef.elements[name].value = value;
+const storageUpdate = throttle(function () {
+  inputData.addEventListener('input', event => {
+    inputValues.email = event.currentTarget.value;
+    console.log(inputValues);
+    localStorage.setItem(localStorageKey, JSON.stringify(inputValues));
   });
-}
+  messageData.addEventListener('input', event => {
+    inputValues.message = event.currentTarget.value;
+    console.log(inputValues);
+    localStorage.setItem(localStorageKey, JSON.stringify(inputValues));
+  });
+}, 1000);
+storageUpdate();
 
-function onSubmit(event) {
-  event.preventDefault();
+//preluarea valori din localStorage
+const parsedInput = JSON.parse(localStorage.getItem(localStorageKey));
+console.log(parsedInput); // de verificare
 
-  const {
-    elements: { email, message },
-  } = event.currentTarget;
+//autofill cu valoare din localStorage
+inputData.value = parsedInput.email;
+messageData.value = parsedInput.message;
 
-  console.log({ email: email.value, message: message.value });
-  event.currentTarget.reset();
-
-  try {
-    remove(LOCALE_STORAGE_KEY);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-function save(key, value) {
-  try {
-    const serializedState = JSON.stringify(value);
-    localStorage.setItem(key, serializedState);
-  } catch (error) {
-    console.error('Set state error: ', error.message);
-  }
-}
-
-function load(key) {
-  try {
-    const serializedState = localStorage.getItem(key);
-    return serializedState === null ? undefined : JSON.parse(serializedState);
-  } catch (error) {
-    console.error('Get state error: ', error.message);
-  }
-}
-
-function remove(key) {
-  try {
-    localStorage.removeItem(key);
-  } catch (error) {
-    console.error('Get state error: ', error.message);
-  }
-}
+form.addEventListener('submit', evt => {
+  evt.preventDefault();
+  localStorage.removeItem(localStorageKey);
+  let lastInputValues = { email: '', message: '' };
+  lastInputValues.email = inputData.value;
+  lastInputValues.message = messageData.value;
+  console.log(lastInputValues);
+  form.reset();
+});
